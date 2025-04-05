@@ -24,7 +24,7 @@ static void _optSelecterDrawConsole(struct OptSelecterCtx* pCtx) {
         printf("%s %s\n", _selectText[i == selected], pCtx->pOptions[i].name);
     }
 
-    consoleUpdate(NULL);
+    consoleUpdate(pCtx->pConsole);
 
     /* Reset render target. */
     consoleSelect(pCur);
