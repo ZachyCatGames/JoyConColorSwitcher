@@ -10,7 +10,7 @@ struct OptSelecterOption {
 struct OptSelecterCtx {
     PrintConsole* pConsole;
 
-    struct OptSelecterOption* pOptions;
+    const struct OptSelecterOption* pOptions;
     size_t optionCount;
     OptSelecterCallback pCallback;
     void* pCallbackData;
