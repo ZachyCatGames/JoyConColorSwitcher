@@ -19,7 +19,7 @@ struct OptSelecterCtx {
     int visibleStartIndex;
 };
 
-struct OptSelecterCtx* optSelecterSetup(PrintConsole* pConsole, struct OptSelecterOption* pOptions, size_t optionCount, OptSelecterCallback pCallback, void* pCallbackData);
+struct OptSelecterCtx* optSelecterSetup(PrintConsole* pConsole, const struct OptSelecterOption* pOptions, size_t optionCount, OptSelecterCallback pCallback, void* pCallbackData);
 
 void optSelecterDestroy(struct OptSelecterCtx* pCtx);
 

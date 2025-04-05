@@ -67,7 +67,7 @@ static void _optSelecterHandleSelectInput(struct OptSelecterCtx* pCtx) {
     (*pCtx->pCallback)(pCtx->pCallbackData, pCtx->selectedOptIndex);
 }
 
-struct OptSelecterCtx* optSelecterSetup(PrintConsole* pConsole, struct OptSelecterOption* pOptions, size_t optionCount, OptSelecterCallback pCallback, void* pCallbackData) {
+struct OptSelecterCtx* optSelecterSetup(PrintConsole* pConsole, const struct OptSelecterOption* pOptions, size_t optionCount, OptSelecterCallback pCallback, void* pCallbackData) {
     /* Allocate new context. */
     struct OptSelecterCtx* pCtx = malloc(sizeof(*pCtx));
     assert(pCtx != NULL);
