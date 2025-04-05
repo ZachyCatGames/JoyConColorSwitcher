@@ -4,7 +4,7 @@
 typedef void (*OptSelecterCallback)(void*, int);
 
 struct OptSelecterOption {
-    char name[32];
+    char name[96];
 };
 
 struct OptSelecterCtx {
