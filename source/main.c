@@ -194,11 +194,12 @@ int main(int argc, char* argv[])
     padInitializeDefault(&pad);
 
     /* Init color and controller selection menus. */
-    struct OptSelecterCtx* pColorSelect,* pControllerSelect;
+    struct OptSelecterCtx* pColorSelect = NULL;
     pColorSelect = optSelecterSetup(pConsole, _colorOptions, sizeof(_colorOptions) / sizeof(_colorOptions[0]), _setColorTypeCallback, NULL);
 
     /* Allocate space for controller select options. */
-    u32 padIdCount;
+    struct OptSelecterCtx* pControllerSelect = NULL;
+    s32 padIdCount;
     HidsysUniquePadId padIds[16];
     struct OptSelecterOption controllerSelectOptions[16];
 
@@ -243,7 +244,7 @@ int main(int argc, char* argv[])
 
                 /* Setup option. */
                 snprintf(controllerSelectOptions[i].name, sizeof(controllerSelectOptions[i].name),
-                    "%s (%s; %lld)", serial.serial_number, _hidsysUniquePadTypeStrs[type], padIds[i]);
+                    "%s (%s; %ld)", serial.serial_number, _hidsysUniquePadTypeStrs[type], padIds[i].id);
             }
 
             /* Init controller selecter. */
@@ -289,6 +290,7 @@ int main(int argc, char* argv[])
             }
             break;
         }
+        default: break;
         }
 
         if (kDown & HidNpadButton_Plus)
