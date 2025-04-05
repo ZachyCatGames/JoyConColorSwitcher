@@ -17,9 +17,6 @@ enum State {
     State_WaitExit,
 };
 
-static enum State state = State_SelectColor;
-static int testNum = 0;
-
 enum JcColorType {
     JcColorType_Black,
     JcColorType_Gray,
@@ -65,6 +62,8 @@ enum JcColorType {
     JcColorType_PokeSvRight,
     JcColorType_LozTotkGold,
 };
+
+static enum State _curState = State_SelectColor;
 
 static enum JcColorType _curJcColorType = JcColorType_Black;
 static int _curPadIndex = 0;
@@ -167,66 +166,6 @@ static const char* const _hidsysUniquePadTypeStrs[] = {
     "DebugPad"
 };
 
-struct OptSelecterOption options[] = {
-    { "TEST00" },
-    { "TEST01" },
-    { "TEST02" },
-    { "TEST03" },
-    { "TEST04" },
-    { "TEST05" },
-    { "TEST06" },
-    { "TEST07" },
-    { "TEST08" },
-    { "TEST09" },
-    { "TEST10" },
-    { "TEST11" },
-    { "TEST12" },
-    { "TEST13" },
-    { "TEST14" },
-    { "TEST15" },
-    { "TEST16" },
-    { "TEST17" },
-    { "TEST18" },
-    { "TEST19" },
-    { "TEST20" },
-    { "TEST21" },
-    { "TEST22" },
-    { "TEST23" },
-    { "TEST24" },
-    { "TEST25" },
-    { "TEST26" },
-    { "TEST27" },
-    { "TEST28" },
-    { "TEST29" },
-    { "TEST30" },
-    { "TEST31" },
-    { "TEST32" },
-    { "TEST33" },
-    { "TEST34" },
-    { "TEST35" },
-    { "TEST36" },
-    { "TEST37" },
-    { "TEST38" },
-    { "TEST39" },
-    { "TEST40" },
-    { "TEST41" },
-    { "TEST42" },
-    { "TEST43" },
-    { "TEST44" },
-    { "TEST45" },
-    { "TEST46" },
-    { "TEST47" },
-    { "TEST48" },
-    { "TEST49" },
-};
-
-static void _testCallback(void*, int idx) {
-    /* Set state to WaitExit. */
-    state = State_WaitExit;
-
-    testNum = idx;
-}
-
 static void _setColorTypeCallback(void*, int idx) {
     /* Set color type to index. */
     _curJcColorType = idx;
@@ -240,11 +179,7 @@ static void _setControllerCallback(void*, int idx) {
 // Main program entrypoint
 int main(int argc, char* argv[])
 {
-    // This example uses a text console, as a simple way to output text to the screen.
-    // If you want to write a software-rendered graphics application,
-    //   take a look at the graphics/simplegfx example, which uses the libnx Framebuffer API instead.
-    // If on the other hand you want to write an OpenGL based application,
-    //   take a look at the graphics/opengl set of examples, which uses EGL instead.
+    /* Init console. */
     PrintConsole* pConsole = consoleInit(NULL);
 
     /* Init hid:sys and hid:dbg. */
@@ -277,12 +212,12 @@ int main(int argc, char* argv[])
         // newly pressed in this frame compared to the previous one
         u64 kDown = padGetButtonsDown(&pad);
 
-        switch(state) {
+        switch(_curState) {
         case State_SelectColor: {
             optSelecterUpdate(pColorSelect, &pad);
             if(kDown & HidNpadButton_A) {
                 /* Set state to select controller. */
-                state = State_SetupSelectController;
+                _curState = State_SetupSelectController;
             }
             break;
         }
@@ -315,7 +250,7 @@ int main(int argc, char* argv[])
             pControllerSelect = optSelecterSetup(pConsole, controllerSelectOptions, padIdCount, _setControllerCallback, NULL);
             
             /* Set state to select controller. */
-            state = State_SelectController;
+            _curState = State_SelectController;
             break;
         }
         case State_SelectController: {
@@ -325,20 +260,33 @@ int main(int argc, char* argv[])
             /* Continue to next state if an option was selected. */
             if(kDown & HidNpadButton_A) {
                 optSelecterDestroy(pControllerSelect);
-                state = State_WriteColor; // TODO: confirmation?
+                _curState = State_WriteColor; // TODO: confirmation?
             }
             /* Go back if B was pressed. */
             else if(kDown & HidNpadButton_B) {
                 optSelecterDestroy(pControllerSelect);
-                state = State_SelectColor;
+                _curState = State_SelectColor;
             }
             break;
         }
-        case State_WriteColor:
+        case State_WriteColor: {
+            /* Write the specified color to the specific controller. */
+            const HidNpadControllerColor* pSelected = &_colorCodes[_curJcColorType];
+            hiddbgUpdateControllerColor(pSelected->main, pSelected->sub, padIds[_curPadIndex]);
+
+            /* Go back to start. */
+            _curState = State_WaitExit;
+            break;
+        }
         case State_WaitExit: {
             consoleClear();
-            printf("Hello :) %d %d %d\n", state, _curJcColorType, padIdCount);
+            printf("Wrote new color to %s!\n", controllerSelectOptions[_curPadIndex].name);
+            printf("Press \"A\" to return to color selecter.\n");
             consoleUpdate(pConsole);
+
+            if(kDown & HidNpadButton_A) {
+                _curState = State_SelectColor;
+            }
             break;
         }
         }
